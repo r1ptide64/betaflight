@@ -36,6 +36,8 @@
 #include "fc/config.h"
 #include "fc/rc_controls.h"
 
+#include "flight/pid.h"
+
 #include "io/beeper.h"
 
 #include "sensors/battery.h"
@@ -136,8 +138,12 @@ void batteryUpdateVoltage(timeUs_t currentTimeUs)
     }
 }
 
-static void updateBatteryBeeperAlert(void)
+static void updateBatteryBeeperAlert(timeUs_t currentTimeUs)
 {
+	if (isCraftMotionless(currentTimeUs)) {
+		beeper(BEEPER_BAT_CRIT_LOW);
+		return;
+	}
     switch (getBatteryState()) {
         case BATTERY_WARNING:
             beeper(BEEPER_BAT_LOW);
@@ -410,11 +416,11 @@ uint8_t calculateBatteryPercentageRemaining(void)
     return batteryPercentage;
 }
 
-void batteryUpdateAlarms(void)
+void batteryUpdateAlarms(timeUs_t currentTimeUs)
 {
     // use the state to trigger beeper alerts
     if (batteryConfig()->useVBatAlerts) {
-        updateBatteryBeeperAlert();
+        updateBatteryBeeperAlert(currentTimeUs);
     }
 }
 

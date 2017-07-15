@@ -366,6 +366,16 @@ static float accelerationLimit(int axis, float currentPidSetpoint) {
     return currentPidSetpoint;
 }
 
+
+static timeUs_t craftBecameStationaryUs;
+
+bool isCraftMotionless(timeUs_t currentTimeUs) {
+	if (craftBecameStationaryUs == 0) {
+		return false;
+	}
+	return cmpTimeUs(currentTimeUs, craftBecameStationaryUs) > BEACON_TIME_LIMIT;
+}
+
 // Betaflight pid controller, which will be maintained in the future with additional features specialised for current (mini) multirotor usage.
 // Based on 2DOF reference design (matlab)
 void pidController(const pidProfile_t *pidProfile, const rollAndPitchTrims_t *angleTrim, timeUs_t currentTimeUs)
@@ -380,6 +390,7 @@ void pidController(const pidProfile_t *pidProfile, const rollAndPitchTrims_t *an
     const float dynKi = MIN((1.0f - motorMixRange) * ITermWindupPointInv, 1.0f);
 
     // ----------PID controller----------
+    bool isCraftStationary = true;
     for (int axis = FD_ROLL; axis <= FD_YAW; axis++) {
         float currentPidSetpoint = getSetpointRate(axis);
 
@@ -408,6 +419,7 @@ void pidController(const pidProfile_t *pidProfile, const rollAndPitchTrims_t *an
         }
         const float gyroRate = gyro.gyroADCf[axis]; // Process variable from gyro output in deg/sec
 
+        isCraftStationary &= (ABS(gyroRate) < BEACON_ANGLE_LIMIT);
         // --------low-level gyro-based PID based on 2DOF PID controller. ----------
         // 2-DOF PID controller with optional filter on derivative term.
         // b = 1 and only c (dtermSetpointWeight) can be tuned (amount derivative on measurement or error).
@@ -466,5 +478,11 @@ void pidController(const pidProfile_t *pidProfile, const rollAndPitchTrims_t *an
             axisPID_I[axis] = 0;
             axisPID_D[axis] = 0;
         }
+    }
+    if (!isCraftStationary) {
+    	craftBecameStationaryUs = 0;
+    }
+    else if (craftBecameStationaryUs == 0) {
+    	craftBecameStationaryUs = currentTimeUs;
     }
 }

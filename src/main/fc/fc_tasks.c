@@ -130,7 +130,6 @@ static void taskHandleSerial(timeUs_t currentTimeUs)
 
 void taskBatteryAlerts(timeUs_t currentTimeUs)
 {
-    UNUSED(currentTimeUs);
 
     if (!ARMING_FLAG(ARMED)) {
         // the battery *might* fall out in flight, but if that happens the FC will likely be off too unless the user has battery backup.
@@ -138,7 +137,7 @@ void taskBatteryAlerts(timeUs_t currentTimeUs)
     }
     batteryUpdateStates();
 
-    batteryUpdateAlarms();
+    batteryUpdateAlarms(currentTimeUs);
 }
 
 #ifndef USE_OSD_SLAVE

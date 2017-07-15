@@ -28,6 +28,8 @@
 #define PID_SERVO_MIXER_SCALING     0.7f
 #define PIDSUM_LIMIT                500
 #define PIDSUM_LIMIT_YAW            400
+#define BEACON_ANGLE_LIMIT			2.5f
+#define BEACON_TIME_LIMIT			60*4*1000*1000
 
 // Scaling factors for Pids for better tunable range in configurator for betaflight pid controller. The scaling is based on legacy pid controller or previous float
 #define PTERM_SCALE 0.032029f
@@ -131,5 +133,6 @@ void pidSetItermAccelerator(float newItermAccelerator);
 void pidInitFilters(const pidProfile_t *pidProfile);
 void pidInitConfig(const pidProfile_t *pidProfile);
 void pidInit(const pidProfile_t *pidProfile);
+bool isCraftMotionless(timeUs_t currentTimeUs);
 
 #endif

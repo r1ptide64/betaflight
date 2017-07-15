@@ -61,7 +61,7 @@ batteryState_e getBatteryState(void);
 const  char * getBatteryStateString(void);
 
 void batteryUpdateStates(void);
-void batteryUpdateAlarms(void);
+void batteryUpdateAlarms(timeUs_t currentTimeUs);
 
 struct rxConfig_s;
 
